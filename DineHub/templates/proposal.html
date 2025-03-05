@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Dinner Proposal - {{ proposal.date }}{% endblock %}
+
+{% block content %}
+<h1>Dinner Proposal - {{ proposal.date }}</h1>
+<h3>Proposed by {{ proposal.owner_ref.username }}</h3>
+
+<!-- Section for A to propose dishes -->
+{% if user == proposal.owner_ref.username %}
+    <h3>Your Proposals (A-Proposed)</h3>
+    <input type="text" id="dish-a" placeholder="Enter a dish">
+    <button onclick="addDish('dish-a', 'a-proposed', 'add_a')">Add</button>
+{% endif %}
+
+<ul id="a-proposed">
+    {% for dish in (proposal.a_proposed.split(",") if proposal.a_proposed else []) %}
+        <li>{{ dish }}</li>
+    {% endfor %}
+</ul>
+
+<!-- Section for B to accept or propose dishes -->
+<h3>B's Proposals (B-Proposed)</h3>
+<ul id="b-proposed">
+    {% for dish in (proposal.b_proposed.split(",") if proposal.b_proposed else []) %}
+        <li>{{ dish }}</li>
+    {% endfor %}
+</ul>
+
+{% if user == proposal.invited_user %}
+    <button onclick="acceptDish('b-proposed')">Accept A's Proposal</button>
+    <input type="text" id="dish-b" placeholder="Enter a dish">
+    <button onclick="addDish('dish-b', 'b-proposed', 'add_b')">Add</button>
+{% endif %}
+
+<!-- Final Decision (Only A can finalize) -->
+{% if user == proposal.owner_ref.username %}
+    <h3>Final Decision</h3>
+    <form method="POST">
+        {% for dish in (proposal.a_proposed.split(",") if proposal.a_proposed else []) %}
+            <label>
+                <input type="checkbox" name="final_dishes" value="{{ dish }}" checked> {{ dish }}
+            </label>
+        {% endfor %}
+        {% for dish in (proposal.b_proposed.split(",") if proposal.b_proposed else []) %}
+            {% if dish not in proposal.a_proposed.split(",") %}
+                <label>
+                    <input type="checkbox" name="final_dishes" value="{{ dish }}" checked> {{ dish }}
+                </label>
+            {% endif %}
+        {% endfor %}
+        <button type="submit" name="action" value="finalize">Finalize Decision</button>
+    </form>
+{% endif %}
+
+<script>
+function addDish(inputId, listId, action) {
+    let input = document.getElementById(inputId);
+    if (input.value.trim() === "") return;
+
+    let form = new FormData();
+    form.append("action", action);
+    form.append("dish", input.value);
+
+    fetch("", { method: "POST", body: form }).then(() => location.reload());
+}
+
+function acceptDish(listId) {
+    let list = document.getElementById(listId);
+    list.innerHTML = document.getElementById("a-proposed").innerHTML;
+
+    let dishes = [];
+    document.querySelectorAll("#a-proposed li").forEach(li => dishes.push(li.textContent));
+
+    let form = new FormData();
+    form.append("action", "add_b");
+    form.append("dish", dishes.join(","));
+
+    fetch("", { method: "POST", body: form }).then(() => location.reload());
+}
+</script>
+
+{% endblock %}

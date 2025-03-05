@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Propose Dinner - DineHub{% endblock %}
+
+{% block content %}
+    <h1>Propose a Dinner</h1>
+    <form action="{{ url_for('main.propose_dinner') }}" method="POST">
+        <label>
+            <input type="radio" name="type" value="home" checked> Eat at Home
+        </label>
+        <label>
+            <input type="radio" name="type" value="restaurant"> Dine Out
+        </label>
+    
+        <div id="home-options">
+            <label for="dish-input">Add a Dish:</label>
+            <input type="text" id="dish-input" placeholder="Enter a dish">
+            <button type="button" onclick="addItem('dish-input', 'dish-list', 'items-input')">Add</button>
+            <ul id="dish-list"></ul>
+        </div>
+    
+        <div id="restaurant-options" style="display: none;">
+            <label for="restaurant-input">Add a Restaurant:</label>
+            <input type="text" id="restaurant-input" placeholder="Enter a restaurant">
+            <button type="button" onclick="addItem('restaurant-input', 'restaurant-list', 'items-input')">Add</button>
+            <ul id="restaurant-list"></ul>
+        </div>
+    
+        <input type="hidden" name="items[]" id="items-input">
+    
+        <br><br>
+        <button type="submit">Submit Proposal</button>
+    </form>
+    
+    <script>
+        document.querySelectorAll('input[name="type"]').forEach((radio) => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'home') {
+                    document.getElementById('home-options').style.display = 'block';
+                    document.getElementById('restaurant-options').style.display = 'none';
+                } else {
+                    document.getElementById('home-options').style.display = 'none';
+                    document.getElementById('restaurant-options').style.display = 'block';
+                }
+            });
+        });
+    
+        function addItem(inputId, listId, hiddenInputId) {
+            let input = document.getElementById(inputId);
+            let list = document.getElementById(listId);
+            let hiddenInput = document.getElementById(hiddenInputId);
+    
+            if (input.value.trim() !== "") {
+                let li = document.createElement("li");
+                li.textContent = input.value;
+    
+                let removeBtn = document.createElement("button");
+                removeBtn.textContent = "❌";
+                removeBtn.style.marginLeft = "10px";
+                removeBtn.onclick = function() {
+                    list.removeChild(li);
+                    updateHiddenInput(hiddenInput, list);
+                };
+    
+                li.appendChild(removeBtn);
+                list.appendChild(li);
+    
+                updateHiddenInput(hiddenInput, list);
+                input.value = ""; 
+            }
+        }
+    
+        function updateHiddenInput(hiddenInput, list) {
+            let items = [];
+            list.querySelectorAll("li").forEach(li => {
+                items.push(li.firstChild.textContent);
+            });
+            hiddenInput.value = items.join(",");
+        }
+    </script>
+    
+{% endblock %}

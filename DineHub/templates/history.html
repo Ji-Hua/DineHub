@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Dinner History - DineHub{% endblock %}
+
+{% block content %}
+    <h1>Dinner History</h1>
+
+    {% if proposals %}
+        <table border="1" cellspacing="0" cellpadding="8" style="width: 80%; margin: auto; text-align: center;">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Proposer</th>
+                    <th>Type</th>
+                    <th>Items</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for proposal in proposals %}
+                    <tr>
+                        <td>{{ proposal.id }}</td>
+                        <td>{{ proposal.proposer }}</td>
+                        <td>{{ proposal.dinner_type.capitalize() }}</td>
+                        <td>{{ proposal.items.replace(',', ', ') }}</td>
+                        <td>{{ proposal.timestamp.strftime('%Y-%m-%d %H:%M:%S') if proposal.timestamp else "N/A" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No dinner proposals yet.</p>
+    {% endif %}
+{% endblock %}
